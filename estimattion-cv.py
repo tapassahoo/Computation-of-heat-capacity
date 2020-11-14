@@ -24,20 +24,27 @@ matplotlib.rcParams.update({'font.size': size*0.75})
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["mathtext.fontset"] = "dejavuserif"
 
+valmin=0.1
+valmax=100
+dt = 0.1
+nt = int(((valmax-valmin)+dt*0.5)/dt)
+nt+=1
+tempList = [valmin+dt*i for i in range(nt)]
 
 colorList = ['r', 'm', 'g', 'b']
-markerList = ['o', 's', 'p', '8', '<', '8', 'p']
+markerList = ['o', 's', 'p', '<', '<', '8', 'p']
 lsList = ['-', '--', '-.', ':']
 
-#interaction = 'cost-1'
-interaction = 'free'
+rptList = [3.0]
+interaction = 'cost-1'
+#interaction = 'free'
 output_prefix = '/Users/tsahoo/ResultsOfExact/'
 if (interaction == 'free'):
 	File_prefix = '/Users/tsahoo/ResultsOfExact/eigen-values-of-1-'
 	output_prefix += 'Cv-of-free-'
 else:
 	File_prefix = '/Users/tsahoo/ResultsOfExact/eigen-values-of-2-'
-	output_prefix += 'Cv-of-'+interaction
+	output_prefix += 'Cv-of-'+interaction+'-'
 
 isomerList = ["equilibrium", "spinless", "para", "ortho"]
 for pltid, isomer in enumerate(isomerList):
@@ -54,9 +61,8 @@ for pltid, isomer in enumerate(isomerList):
 	if (isomer == "equilibrium"):
 		spin_label="Equilibrium-"
 
-	rptList = [10.0]
-	for rcom in rptList:
-		rcom="{:3.2f}".format(rcom)
+	for rcom1 in rptList:
+		rcom="{:3.2f}".format(rcom1)
 
 		if (interaction == 'free'):
 			File_para = File_prefix+'p-H2O-jmax12-Rpt'+rcom+'Angstrom-grids-27-50-diag.txt'
@@ -70,14 +76,12 @@ for pltid, isomer in enumerate(isomerList):
 			else:
 				FileToBeRead = File_prefix+spin+'H2O-one-rotor-fixed-'+interaction+'-jmax12-Rpt'+rcom+'Angstrom-grids-27-50-diag.txt'
 			valTotalEnergy = np.genfromtxt(FileToBeRead, unpack=True, usecols=[0], skip_header=0, skip_footer=0)
+			print(valTotalEnergy_para[0])
 			valTotalEnergy = valTotalEnergy-valTotalEnergy_para[0]
 			valTotalEnergySq=np.square(valTotalEnergy)
 
-			init = 1
-			ndim = 101-init
-			tempList = np.zeros(ndim)
-			cvList = np.zeros(ndim)
-			for i, temperature in enumerate(range(init,ndim+init)):
+			cvList = np.zeros(nt,float)
+			for i, temperature in enumerate(tempList):
 				beta=1.0/temperature
 				exp1=np.exp(-beta*valTotalEnergy)
 				
@@ -91,7 +95,7 @@ for pltid, isomer in enumerate(isomerList):
 			np.savetxt(filename,cv_write.T,fmt='%20.8f',delimiter=' ',header='First col: Temperature in Kelvin; second col: Cv')
 			
 			labelstr = spin_label+r'$\mathrm{H_2 O}$'
-			plt.plot(tempList, cvList, color=colorList[pltid], ls=lsList[pltid], linewidth=1,  marker=markerList[pltid], markersize=6, label=labelstr)
+			plt.plot(tempList, cvList, color=colorList[pltid], ls=lsList[pltid], linewidth=1,  marker=markerList[pltid], markersize=4, label=labelstr)
 
 		if (isomer == "equilibrium"):
 			if (interaction == 'free'):
@@ -110,12 +114,8 @@ for pltid, isomer in enumerate(isomerList):
 			val_ortho = valTotalEnergy_ortho-valTotalEnergy_para[0]
 			valTotalEnergySq_ortho = np.square(val_ortho)
 
-
-			init = 1
-			ndim = 101-init
-			tempList = np.zeros(ndim)
-			cvList = np.zeros(ndim)
-			for i, temperature in enumerate(range(init,ndim+init)):
+			cvList = np.zeros(nt)
+			for i, temperature in enumerate(tempList):
 				beta=1.0/temperature
 				exp1_ortho=np.exp(-beta*val_ortho)
 				exp1_para=np.exp(-beta*val_para)
@@ -131,7 +131,7 @@ for pltid, isomer in enumerate(isomerList):
 			np.savetxt(filename,cv_write.T,fmt='%20.8f',delimiter=' ',header='First col: Temperature in Kelvin; second col: Cv')
 			
 			labelstr = spin_label+r'$\mathrm{H_2 O}$'
-			plt.plot(tempList, cvList, color=colorList[pltid], ls=lsList[pltid], linewidth=1,  marker=markerList[pltid], markersize=6, label=labelstr)
+			plt.plot(tempList, cvList, color=colorList[pltid], ls=lsList[pltid], linewidth=1,  marker=markerList[pltid], markersize=4, label=labelstr)
 
 
 
@@ -152,18 +152,28 @@ deltax = midpointx*0.15
 textpositionx = xmin+midpointx-0.25*midpointx
 textpositiony = ymin+midpointy
 																															
+rcom1="{:3.1f}".format(rcom1)
 if (interaction == 'free'):
 	plt.text(xmin+(xmax-xmin)*0.3,ymax-(ymax-ymin)*0.1,r'$N = \ 1$; No interaction')
-else:
-	plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.5,r'$N = \ 1$; '+r'$(\pi$'+' 0, 0)')
+elif (interaction == 'cost-1'):
+	#plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.5,r'$N = \ 1$; '+r'$(\pi$'+' 0, 0)')
+	#plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.6,r'$r = $'+rcom1+r'$\mathrm{\AA}$')
+	plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.1,r'$N = \ 1$; '+r'$(\pi$'+' 0, 0)')
+	plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.2,r'$r = $'+rcom1+r'$\mathrm{\AA}$')
+elif (interaction == 'cost1'):
+	#plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.5,r'$N = \ 1$; (0, 0, 0)')
+	#plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.6,r'$r = $'+rcom1+r'$\mathrm{\AA}$')
+	plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.1,r'$N = \ 1$; (0, 0, 0)')
+	plt.text(xmin+(xmax-xmin)*0.4,ymax-(ymax-ymin)*0.2,r'$r = $'+rcom1+r'$\mathrm{\AA}$')
 
 #For ticks manipulating                                                                                                     
 plt.minorticks_on()
 plt.tick_params(axis="both", direction="in", which="minor", right=False, top=False, length=2)
 plt.tick_params(axis="both", direction="in", which="major", right=True, top=True, length=6)
 #Adjust the plot
-plt.legend(numpoints=1,loc=('upper right'))
-plt.subplots_adjust(top=0.99,bottom=0.12,left=0.10,right=0.99,hspace=0.0,wspace=0.0)
+plt.legend(numpoints=1,loc=('center right'))
+#plt.legend(numpoints=1,loc=('upper right'))
+plt.subplots_adjust(top=0.99,bottom=0.12,left=0.11,right=0.99,hspace=0.0,wspace=0.0)
 
 FilePlot=output_prefix+'H2O-Rpt'+rcom+'Angstrom'
 plt.savefig(FilePlot+".pdf", format='pdf') 
