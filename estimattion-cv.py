@@ -29,7 +29,8 @@ colorList = ['r', 'm', 'g', 'b']
 markerList = ['o', 's', 'p', '8', '<', '8', 'p']
 lsList = ['-', '--', '-.', ':']
 
-interaction = 'cost-1'
+#interaction = 'cost-1'
+interaction = 'free'
 output_prefix = '/Users/tsahoo/ResultsOfExact/'
 if (interaction == 'free'):
 	File_prefix = '/Users/tsahoo/ResultsOfExact/eigen-values-of-1-'
